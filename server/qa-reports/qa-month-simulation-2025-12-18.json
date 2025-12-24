@@ -1,0 +1,273 @@
+{
+  "meta": {
+    "product": "WeldMS",
+    "startedAt": "2025-12-18T19:37:59.660Z",
+    "env": "development",
+    "endedAt": "2025-12-18T19:38:01.973Z",
+    "durationMs": 2313,
+    "db": "weld-management_qa"
+  },
+  "created": {
+    "admin": {
+      "username": "arul.admin",
+      "name": "Arul Admin",
+      "email": "arul.admin@example.com",
+      "role": "Admin",
+      "avatar": null,
+      "status": "active",
+      "skills": [],
+      "certifications": [],
+      "hourlyRate": 0,
+      "paymentType": "Monthly",
+      "baseSalary": 0,
+      "salaryMonthly": 0,
+      "salaryDaily": 0,
+      "overtimeRate": 0,
+      "workingDaysPerMonth": 26,
+      "workingHoursPerDay": 8,
+      "advanceBalance": 0,
+      "employmentType": "full-time",
+      "experience": 0,
+      "age": null,
+      "gender": "",
+      "maritalStatus": "",
+      "bloodGroup": "",
+      "pan": "",
+      "alternatePhone": "",
+      "salary": {
+        "baseSalary": 0,
+        "paymentType": "Monthly"
+      },
+      "_id": "6944581703abd00f65b66077",
+      "joinDate": "2025-12-18T19:37:59.771Z",
+      "createdAt": "2025-12-18T19:37:59.774Z",
+      "updatedAt": "2025-12-18T19:37:59.774Z",
+      "employeeId": "A001"
+    },
+    "supervisorSimulatedAsManager": {
+      "username": "kumar.supervisor",
+      "name": "Kumar Supervisor",
+      "email": "kumar.supervisor@example.com",
+      "role": "Manager",
+      "avatar": null,
+      "status": "active",
+      "skills": [],
+      "certifications": [],
+      "hourlyRate": 0,
+      "paymentType": "Monthly",
+      "baseSalary": 0,
+      "salaryMonthly": 0,
+      "salaryDaily": 0,
+      "overtimeRate": 0,
+      "workingDaysPerMonth": 26,
+      "workingHoursPerDay": 8,
+      "advanceBalance": 0,
+      "employmentType": "full-time",
+      "experience": 0,
+      "age": null,
+      "gender": "",
+      "maritalStatus": "",
+      "bloodGroup": "",
+      "pan": "",
+      "alternatePhone": "",
+      "salary": {
+        "baseSalary": 0,
+        "paymentType": "Monthly"
+      },
+      "_id": "6944581703abd00f65b66087",
+      "joinDate": "2025-12-18T19:37:59.869Z",
+      "createdAt": "2025-12-18T19:37:59.869Z",
+      "updatedAt": "2025-12-18T19:37:59.869Z",
+      "employeeId": "M001"
+    },
+    "worker": {
+      "username": "ramesh.worker",
+      "name": "Ramesh Worker",
+      "email": "ramesh.worker@example.com",
+      "phone": "9876543210",
+      "role": "Worker",
+      "department": "Welding",
+      "position": "Welder",
+      "avatar": null,
+      "status": "active",
+      "skills": [
+        "MIG",
+        "Arc"
+      ],
+      "certifications": [],
+      "hourlyRate": 0,
+      "paymentType": "Monthly",
+      "baseSalary": 0,
+      "salaryMonthly": 0,
+      "salaryDaily": 0,
+      "overtimeRate": 0,
+      "workingDaysPerMonth": 26,
+      "workingHoursPerDay": 8,
+      "advanceBalance": 0,
+      "employmentType": "full-time",
+      "experience": 0,
+      "age": null,
+      "gender": "",
+      "maritalStatus": "",
+      "bloodGroup": "",
+      "pan": "",
+      "alternatePhone": "",
+      "salary": {
+        "baseSalary": 0,
+        "paymentType": "Monthly"
+      },
+      "_id": "6944581703abd00f65b6608c",
+      "joinDate": "2025-12-18T19:37:59.942Z",
+      "createdAt": "2025-12-18T19:37:59.943Z",
+      "updatedAt": "2025-12-18T19:37:59.943Z",
+      "employeeId": "W001"
+    },
+    "project": {
+      "clientContact": {
+        "name": "ABC Accounts",
+        "email": "accounts@abc.example",
+        "phone": "9123456789"
+      },
+      "_id": "6944581803abd00f65b66098",
+      "name": "Factory Welding Work",
+      "client": "ABC Industries",
+      "status": "pending",
+      "priority": "medium",
+      "startDate": "2025-11-01T00:00:00.000Z",
+      "endDate": "2025-11-30T00:00:00.000Z",
+      "budget": 0,
+      "spent": 0,
+      "progress": 0,
+      "manager": {
+        "_id": "6944581703abd00f65b66087",
+        "name": "Kumar Supervisor",
+        "email": "kumar.supervisor@example.com"
+      },
+      "assignedWorkers": [
+        {
+          "_id": "6944581703abd00f65b6608c",
+          "name": "Ramesh Worker",
+          "email": "ramesh.worker@example.com"
+        }
+      ],
+      "tags": [],
+      "createdBy": "6944581703abd00f65b66077",
+      "attachments": [],
+      "createdAt": "2025-12-18T19:38:00.048Z",
+      "updatedAt": "2025-12-18T19:38:00.048Z",
+      "projectId": "P001",
+      "__v": 0,
+      "daysRemaining": 0,
+      "isOverdue": true,
+      "budgetUtilization": 0,
+      "id": "6944581803abd00f65b66098"
+    },
+    "tasksCreated": 6,
+    "salaryInvoiceId": "6944581903abd00f65b66131"
+  },
+  "testCases": [
+    {
+      "name": "Create Admin user (Arul Admin) via /api/auth/register",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Create Supervisor user (requested) -> uses Manager role (Kumar Supervisor)",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Create Worker user (Ramesh Worker) via /api/workers (Admin)",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Verify users exist in DB and roles are correct",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Permission check: Manager cannot create project (should be 403)",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Create Project (Factory Welding Work) as Admin",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Create Tasks across 4 weeks as Manager",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Worker can only see assigned tasks",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Insert 1 month attendance (26 present, 4 absent) with overtime, linked to project (DB insert)",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Salary invoice calculation uses attendance + daily wage (expect 26 × 700 = 18200)",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Generate salary invoice (Admin)",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Record salary payment (Admin) as partial daysPaid=26 -> 18200",
+      "status": "pass",
+      "error": null
+    },
+    {
+      "name": "Manager cannot pay salary (permission)",
+      "status": "pass",
+      "error": null
+    }
+  ],
+  "dbSnapshot": {
+    "users": 3,
+    "workers": 1,
+    "projects": 1,
+    "tasks": 6,
+    "attendance": 30,
+    "salaries": 0,
+    "salary_payments": 1,
+    "invoices": 1,
+    "invoice_communications": 0
+  },
+  "knownGaps": [
+    {
+      "id": "role-supervisor-missing",
+      "severity": "P0",
+      "note": "Requested role \"Supervisor\" does not exist; system uses Manager. Impacts permissions + menu visibility spec."
+    },
+    {
+      "id": "attendance-project-link-missing",
+      "severity": "P0",
+      "note": "Attendance API does not allow setting `project`; controller removed project assignment. Requirement says attendance auto-links worker & project."
+    },
+    {
+      "id": "worker-soft-delete-missing",
+      "severity": "P1",
+      "note": "Worker delete is hard delete (no soft delete / restore). Requirement expects soft delete."
+    },
+    {
+      "id": "salary-module-daily-wage-mismatch",
+      "severity": "P0",
+      "note": "Salary module generation calculates baseSalary from hours * hourlyRate; requirement wants daily wage × present days. SalaryPayment supports daysPaid, but does not update Salary records."
+    },
+    {
+      "id": "worker-paymentType-update-gap",
+      "severity": "P1",
+      "note": "Worker update API allows salaryDaily but not paymentType; salary invoice calculator uses paymentType. QA script set paymentType directly in DB."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply font-sans bg-lightbg text-secondary dark:bg-darkbg dark:text-gray-200 transition-colors duration-200;
+  }
+}
+
