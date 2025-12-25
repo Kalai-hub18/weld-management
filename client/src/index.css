@@ -1,0 +1,262 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Styles */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-100 dark:bg-neutral-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-400 dark:bg-neutral-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-500 dark:bg-neutral-500;
+  }
+
+  /* Focus styles */
+  *:focus {
+    @apply outline-none;
+  }
+
+  *:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-light-bg dark:ring-offset-dark-bg;
+  }
+}
+
+/* Component Styles */
+@layer components {
+  /* Glass Card Effect */
+  .glass-card {
+    @apply bg-white/80 dark:bg-dark-card/80 backdrop-blur-glass border border-light-border dark:border-dark-border;
+  }
+
+  /* Premium Card */
+  .premium-card {
+    @apply bg-light-card dark:bg-dark-card rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300;
+  }
+
+  /* Button Variants */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary-dark text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium py-2.5 px-6 rounded-xl transition-all duration-300;
+  }
+
+  /* Input Styles */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+  }
+
+  /* Sidebar Link */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary transition-all duration-200;
+  }
+
+  .sidebar-link-active {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-semibold shadow-lg shadow-primary/30;
+  }
+
+  /* Status Badges */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-success {
+    @apply badge bg-success/10 text-success;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger/10 text-danger;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning/10 text-warning;
+  }
+
+  .badge-info {
+    @apply badge bg-info/10 text-info;
+  }
+
+  .badge-neutral {
+    @apply badge bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300;
+  }
+
+  /* Table Styles */
+  .table-container {
+    @apply overflow-x-auto rounded-2xl bg-light-card dark:bg-dark-card shadow-card;
+  }
+
+  .table-header {
+    @apply bg-neutral-50 dark:bg-neutral-800/50 text-neutral-600 dark:text-neutral-300 font-semibold text-sm uppercase tracking-wider;
+  }
+
+  .table-row {
+    @apply border-b border-light-border dark:border-dark-border hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors duration-150;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 text-sm text-neutral-700 dark:text-neutral-200;
+  }
+
+  /* Page Header */
+  .page-header {
+    @apply text-2xl md:text-3xl font-bold text-light-text dark:text-dark-text;
+  }
+
+  /* Stat Card */
+  .stat-card {
+    @apply premium-card p-6 flex flex-col gap-2;
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  /* Text Gradient */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent;
+  }
+
+  /* Glow Effects */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(255, 106, 0, 0.3);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+  }
+
+  /* Animation Utilities */
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animate-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animate-delay-500 {
+    animation-delay: 500ms;
+  }
+}
+
+/* MUI Overrides for Dark Mode */
+.dark .MuiPaper-root {
+  background-color: #1E293B !important;
+  color: #F1F5F9 !important;
+}
+
+.dark .MuiTableCell-root {
+  border-color: #334155 !important;
+}
+
+.dark .MuiInputBase-root {
+  color: #F1F5F9 !important;
+}
+
+.MuiOutlinedInput-root {
+  border-radius: 12px !important;
+  background-color: #fff;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: #d7d7d7 !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #f97316 !important; /* primary */
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #f97316 !important;
+}
+
+.dark .MuiOutlinedInput-notchedOutline {
+  border-color: #334155 !important;
+}
+
+/* -----------------------------
+   Theme tokens (CSS variables)
+   ----------------------------- */
+:root {
+  --wm-primary: #FF6A00;
+  --wm-secondary: #1E293B;
+  --wm-accent: #0EA5E9;
+  --wm-bg: #F8FAFC;
+  --wm-font-size: 14px;
+}
+
+body {
+  font-size: var(--wm-font-size);
+}
+
+/* Make the most common Tailwind utility tokens follow the workspace theme.
+   (Opacity variants like bg-primary/10 are NOT covered by this minimal override.) */
+.bg-primary { background-color: var(--wm-primary) !important; }
+.text-primary { color: var(--wm-primary) !important; }
+.border-primary { border-color: var(--wm-primary) !important; }
+.ring-primary { --tw-ring-color: var(--wm-primary) !important; }
+
+.bg-secondary { background-color: var(--wm-secondary) !important; }
+.text-secondary { color: var(--wm-secondary) !important; }
+.border-secondary { border-color: var(--wm-secondary) !important; }
+
+/* Component helpers */
+.btn-primary:hover { filter: brightness(0.92); }
+.btn-secondary:hover { filter: brightness(0.92); }
+
+.dark .MuiInputLabel-root {
+  color: #94A3B8 !important;
+}
+
+.dark .MuiSvgIcon-root {
+  color: #94A3B8 !important;
+}
+
+.dark .MuiMenuItem-root:hover {
+  background-color: #334155 !important;
+}
