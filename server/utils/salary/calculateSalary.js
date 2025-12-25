@@ -14,6 +14,8 @@ export function calculateSalary(worker, opts) {
   const daysInMonth = coerceNumber(opts?.daysInMonth || 30) || 30
   const requestedDays = coerceNumber(opts?.daysPaid)
   const requestedAmount = coerceNumber(opts?.amount)
+  const dailyPayments = Array.isArray(opts?.dailyPayments) ? opts.dailyPayments : []
+  const dailyPaymentsTotal = dailyPayments.reduce((acc, curr) => acc + coerceNumber(curr.amount), 0)
 
   let amountGross = 0
   let advanceDeducted = 0
@@ -21,16 +23,28 @@ export function calculateSalary(worker, opts) {
 
   if (type === 'full') {
     amountGross = salaryMonthly
+    // Calculate total advance including new daily payments (simulated as already paid)
+    // Actually, daily payments are NEW deductions we are about to make.
+    // So we treat them as additional advance to be deducted.
     advanceDeducted = Math.min(advanceBalance, amountGross)
-    netAmount = amountGross - advanceDeducted
+
+    // Total deduction = Existing Advance Deducted + New Daily Payments
+    // We deduct daily payments from the remaining amount
+    const remainingAfterAdvance = amountGross - advanceDeducted
+    const dailyDeduction = Math.min(dailyPaymentsTotal, remainingAfterAdvance)
+
+    // We don't change advanceDeducted (that tracks historical advance), 
+    // but the dailyPayments will be recorded as separate 'daily' (advance) payments.
+    // The net pay is what remains.
+    netAmount = Math.max(0, remainingAfterAdvance - dailyPaymentsTotal)
   } else if (type === 'partial') {
     if (!requestedDays || requestedDays <= 0) throw new Error('daysPaid must be > 0 for partial')
     const daily = salaryDaily > 0 ? salaryDaily : (salaryMonthly > 0 ? salaryMonthly / daysInMonth : 0)
     amountGross = daily * requestedDays
     advanceDeducted = Math.min(advanceBalance, amountGross)
     netAmount = amountGross - advanceDeducted
-  } else if (type === 'advance') {
-    if (!requestedAmount || requestedAmount <= 0) throw new Error('amount must be > 0 for advance')
+  } else if (type === 'advance' || type === 'daily') {
+    if (!requestedAmount || requestedAmount <= 0) throw new Error('amount must be > 0 for advance/daily')
     amountGross = requestedAmount
     advanceDeducted = 0
     netAmount = amountGross
@@ -49,6 +63,7 @@ export function calculateSalary(worker, opts) {
     amountGross: round2(amountGross),
     advanceDeducted: round2(advanceDeducted),
     netAmount: round2(netAmount),
+    dailyPaymentsTotal: round2(dailyPaymentsTotal),
   }
 }
 

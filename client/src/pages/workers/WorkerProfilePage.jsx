@@ -62,7 +62,7 @@ const WorkerProfilePage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { settings } = useSettings()
-  
+
   const [worker, setWorker] = useState(null)
   const [tasks, setTasks] = useState([])
   const [attendance, setAttendance] = useState([])
@@ -79,7 +79,7 @@ const WorkerProfilePage = () => {
   const [ledgerPayDate, setLedgerPayDate] = useState('')
   const [ledgerVoidReason, setLedgerVoidReason] = useState('')
   const [anchorEl, setAnchorEl] = useState(null)
-  
+
   const menuOpen = Boolean(anchorEl)
 
   const handleMenuClick = (event) => {
@@ -300,7 +300,11 @@ const WorkerProfilePage = () => {
       name,
       client,
       status,
-      progress: taskWithProject.progress || 0,
+      progress: status === 'completed' ? 100 : (
+        taskCounts.total > 0
+          ? Math.round((taskCounts.completed / taskCounts.total) * 100)
+          : (status === 'in-progress' ? 50 : 0)
+      ),
     }
   })()
 
@@ -373,12 +377,12 @@ const WorkerProfilePage = () => {
         ? { ...workerRes.data.worker, stats: workerRes.data.stats }
         : workerRes?.data
       setWorker(normalizeWorker(payload))
-    } catch {}
+    } catch { }
 
     try {
       const res = await salaryService.getPaymentHistory(id, { limit: 50 })
       setPaymentHistory(res.data || [])
-    } catch {}
+    } catch { }
   }
 
   useEffect(() => {
@@ -532,7 +536,7 @@ const WorkerProfilePage = () => {
             <h1 className="text-2xl md:text-3xl font-bold text-light-text dark:text-dark-text">
               Worker Profile
             </h1>
-              <p className="text-neutral-500 dark:text-neutral-400">
+            <p className="text-neutral-500 dark:text-neutral-400">
               Employee ID: {worker.employeeId}
             </p>
           </div>
@@ -602,9 +606,8 @@ const WorkerProfilePage = () => {
                 >
                   {worker.name.split(' ').map(n => n[0]).join('')}
                 </Avatar>
-                <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white dark:border-dark-card ${
-                  worker.status === 'active' ? 'bg-success' : worker.status === 'on-leave' ? 'bg-warning' : 'bg-neutral-400'
-                }`} />
+                <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white dark:border-dark-card ${worker.status === 'active' ? 'bg-success' : worker.status === 'on-leave' ? 'bg-warning' : 'bg-neutral-400'
+                  }`} />
               </div>
 
               {/* Name & Position */}
@@ -713,7 +716,7 @@ const WorkerProfilePage = () => {
             <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">
               Skills & Certifications
             </h3>
-            
+
             {/* Skills */}
             <div className="mb-6">
               <p className="text-sm text-neutral-500 mb-3">Skills</p>
@@ -747,9 +750,8 @@ const WorkerProfilePage = () => {
                         )}
                         <span className="font-semibold">{cert.name}</span>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        cert.status === 'active' ? 'bg-success/20' : 'bg-warning/20'
-                      }`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${cert.status === 'active' ? 'bg-success/20' : 'bg-warning/20'
+                        }`}>
                         {cert.status === 'expiring-soon' ? 'Expiring Soon' : 'Active'}
                       </span>
                     </div>
@@ -855,11 +857,19 @@ const WorkerProfilePage = () => {
                             <td className="p-3">{p.payDate ? formatDate(p.payDate, settings) : '--'}</td>
                             <td className="p-3 capitalize">{p.type}</td>
                             <td className="p-3 text-right">{formatCurrency(Number(p.amountGross || 0), settings)}</td>
-                            <td className="p-3 text-right">{formatCurrency(Number(p.advanceDeducted || 0), settings)}</td>
+                            <td className="p-3 text-right">{formatCurrency((Number(p.advanceDeducted || 0) + Number(p.dailyDeduction || 0)), settings)}</td>
                             <td className="p-3 text-right">{formatCurrency(Number(p.netAmount || 0), settings)}</td>
                             <td className="p-3 text-right">{formatCurrency(Number(p.advanceBalanceAfter ?? 0), settings)}</td>
                             <td className="p-3 text-right">
                               <div className="flex justify-end gap-2">
+                                {p.dailyPaymentDetails?.length > 0 && (
+                                  <button
+                                    className="px-3 py-1 rounded-lg bg-info/10 text-info text-sm"
+                                    onClick={() => setLedgerSelected(p)}
+                                  >
+                                    View
+                                  </button>
+                                )}
                                 <button
                                   className="px-3 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-sm"
                                   onClick={() => {
@@ -905,7 +915,7 @@ const WorkerProfilePage = () => {
                   {currentProject.status?.replace('-', ' ') || 'in-progress'}
                 </span>
               </div>
-              
+
               <div className="p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border border-primary/20">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -964,13 +974,12 @@ const WorkerProfilePage = () => {
                   <EventAvailableIcon className="text-primary" />
                   Attendance Summary
                 </h3>
-                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                  attendanceSummary.attendancePercentage >= 90 
-                    ? 'bg-success/10 text-success' 
-                    : attendanceSummary.attendancePercentage >= 75 
-                      ? 'bg-warning/10 text-warning' 
-                      : 'bg-danger/10 text-danger'
-                }`}>
+                <span className={`px-3 py-1 rounded-full text-sm font-bold ${attendanceSummary.attendancePercentage >= 90
+                  ? 'bg-success/10 text-success'
+                  : attendanceSummary.attendancePercentage >= 75
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-danger/10 text-danger'
+                  }`}>
                   {attendanceSummary.attendancePercentage.toFixed(1)}%
                 </span>
               </div>
@@ -1017,11 +1026,10 @@ const WorkerProfilePage = () => {
                       className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          record.status === 'present' ? 'bg-success' :
+                        <div className={`w-2 h-2 rounded-full ${record.status === 'present' ? 'bg-success' :
                           record.status === 'on-leave' ? 'bg-warning' :
-                          record.status === 'absent' ? 'bg-danger' : 'bg-neutral-400'
-                        }`} />
+                            record.status === 'absent' ? 'bg-danger' : 'bg-neutral-400'
+                          }`} />
                         <span className="text-sm font-medium">
                           {formatDate(record.date, settings)}
                         </span>
@@ -1032,12 +1040,11 @@ const WorkerProfilePage = () => {
                             {record.checkIn} - {record.checkOut}
                           </span>
                         )}
-                        <span className={`text-xs px-2 py-1 rounded-full capitalize ${
-                          record.status === 'present' ? 'bg-success/10 text-success' :
+                        <span className={`text-xs px-2 py-1 rounded-full capitalize ${record.status === 'present' ? 'bg-success/10 text-success' :
                           record.status === 'on-leave' ? 'bg-warning/10 text-warning' :
-                          record.status === 'weekend' ? 'bg-neutral-200 text-neutral-500' :
-                          'bg-danger/10 text-danger'
-                        }`}>
+                            record.status === 'weekend' ? 'bg-neutral-200 text-neutral-500' :
+                              'bg-danger/10 text-danger'
+                          }`}>
                           {record.status}
                         </span>
                       </div>
@@ -1177,6 +1184,56 @@ const WorkerProfilePage = () => {
           </button>
         </DialogActions>
       </Dialog>
+      {/* Daily Details View Dialog */}
+      <Dialog open={Boolean(ledgerSelected && !ledgerEditOpen && !ledgerVoidOpen)} onClose={() => setLedgerSelected(null)} maxWidth="xs" fullWidth>
+        <DialogTitle className="flex justify-between items-center">
+          <span>Payment Details</span>
+          <IconButton size="small" onClick={() => setLedgerSelected(null)}><CancelIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent className="!pt-4">
+          <div className="space-y-4">
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Date</span>
+              <span className="font-medium">{ledgerSelected?.payDate ? formatDate(ledgerSelected.payDate, settings) : '--'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Type</span>
+              <span className="font-medium capitalize">{ledgerSelected?.type}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-neutral-500">Amount</span>
+              <span className="font-medium text-primary">{formatCurrency(Number(ledgerSelected?.amountGross || 0), settings)}</span>
+            </div>
+
+            {/* Daily Payments List */}
+            {ledgerSelected?.dailyPaymentDetails?.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-dashed border-neutral-200 dark:border-neutral-700">
+                <p className="text-sm font-semibold mb-2">Daily Payments Included</p>
+                <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg overflow-hidden">
+                  {ledgerSelected.dailyPaymentDetails.map((d, i) => (
+                    <div key={i} className="flex justify-between p-2 text-sm border-b border-light-border dark:border-dark-border last:border-0">
+                      <span className="text-neutral-600 dark:text-neutral-300">{formatDate(d.date, settings)}</span>
+                      <span className="font-medium">{formatCurrency(Number(d.amount), settings)}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between p-2 text-sm font-bold bg-neutral-100 dark:bg-neutral-800">
+                    <span>Total Daily Deducted</span>
+                    <span>{formatCurrency(ledgerSelected.dailyPaymentDetails.reduce((sum, d) => sum + Number(d.amount), 0), settings)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {ledgerSelected?.note && (
+              <div className="mt-4 pt-4 border-t border-dashed border-neutral-200 dark:border-neutral-700">
+                <p className="text-xs text-neutral-500 mb-1">Note</p>
+                <p className="text-sm italic text-neutral-600 dark:text-neutral-400">{ledgerSelected.note}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </motion.div>
   )
 }

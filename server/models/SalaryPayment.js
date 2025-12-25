@@ -16,7 +16,7 @@ const salaryPaymentSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['full', 'partial', 'advance', 'adhoc'],
+      enum: ['full', 'partial', 'advance', 'adhoc', 'daily'],
       required: true,
       index: true,
     },
@@ -35,6 +35,15 @@ const salaryPaymentSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'Advance deducted cannot be negative'],
     },
+    dailyDeduction: {
+      type: Number,
+      default: 0,
+      min: [0, 'Daily deduction cannot be negative'],
+    },
+    dailyPaymentDetails: [{
+      date: Date,
+      amount: Number,
+    }],
     netAmount: {
       type: Number,
       required: true,

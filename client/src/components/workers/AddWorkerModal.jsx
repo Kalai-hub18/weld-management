@@ -644,7 +644,7 @@ const AddWorkerModal = ({ open, onClose, onAdd }) => {
                     startAdornment: <InputAdornment position="start">{settings?.currency?.symbol || '₹'}</InputAdornment>,
                   }}
                 />
-                <TextField
+                {/* <TextField
                   fullWidth
                   label="Working Days/Month"
                   name="workingDaysPerMonth"
@@ -653,8 +653,8 @@ const AddWorkerModal = ({ open, onClose, onAdd }) => {
                   onChange={handleChange}
                   inputProps={{ min: 1, max: 31 }}
                   helperText="Used for salary calculations"
-                />
-                <TextField
+                /> */}
+                {/* <TextField
                   fullWidth
                   label="Working Hours/Day"
                   name="workingHoursPerDay"
@@ -663,12 +663,12 @@ const AddWorkerModal = ({ open, onClose, onAdd }) => {
                   onChange={handleChange}
                   inputProps={{ min: 1, max: 24 }}
                   helperText="Used for hourly rate calculation"
-                />
+                /> */}
               </div>
             </div>
 
             {/* Auto-calculated fields (read-only) */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border border-primary/20">
+            {/* <div className="p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border border-primary/20">
               <h4 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
                 <CheckIcon fontSize="small" />
                 Auto-Calculated Salary Breakdown
@@ -719,7 +719,7 @@ const AddWorkerModal = ({ open, onClose, onAdd }) => {
                   disabled
                 />
               </div>
-            </div>
+            </div> */}
 
             <div>
               <h4 className="text-sm font-semibold text-neutral-500 uppercase mb-4">

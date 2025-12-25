@@ -191,33 +191,23 @@ const SalaryPage = () => {
         setLoading(true)
         const [workersRes, salariesRes] = await Promise.all([
           workerService.getAllWorkers({ limit: 1000 }),
-          period === 'monthly'
-            ? salaryService.getSalaries({
-              month: selectedMonth,
-              ...(workerFilter !== 'all' ? { worker: workerFilter } : {}),
-              ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
-              limit: 1000,
-            })
-            : salaryService.getPayrollView({
-              period,
-              date: period === 'daily' || period === 'weekly'
-                ? selectedDate
-                : period === 'yearly'
-                  ? selectedYear
-                  : selectedMonth,
-              ...(workerFilter !== 'all' ? { worker: workerFilter } : {}),
-              ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
-              workspaceId: 'default',
-            }),
+          salaryService.getPayrollView({
+            period,
+            date: period === 'daily' || period === 'weekly'
+              ? selectedDate
+              : period === 'yearly'
+                ? selectedYear
+                : selectedMonth,
+            ...(workerFilter !== 'all' ? { worker: workerFilter } : {}),
+            ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+            workspaceId: 'default',
+          }),
         ])
 
         setWorkers(workersRes.data || [])
-        if (period === 'monthly') {
-          setRecords((salariesRes.data || []).map(toUiSalary))
-        } else {
-          const rows = salariesRes.data?.rows || []
-          setRecords(rows.map(toUiPayrollRow))
-        }
+        // All periods now use the payroll view format (rows)
+        const rows = salariesRes.data?.rows || []
+        setRecords(rows.map(toUiPayrollRow))
       } catch (e) {
         console.error(e)
         toast.error('Failed to load salary records')
@@ -236,7 +226,7 @@ const SalaryPage = () => {
     return records.filter(record => {
       const matchesWorker = workerFilter === 'all' || record.worker.id === workerFilter
       const matchesStatus = statusFilter === 'all' || record.status === statusFilter
-      const matchesSearch = 
+      const matchesSearch =
         record.worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.worker.employeeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.salaryId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -473,11 +463,10 @@ const SalaryPage = () => {
         />
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showFilters 
-              ? 'bg-primary text-white' 
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${showFilters
+              ? 'bg-primary text-white'
               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
-          }`}
+            }`}
         >
           <FilterListIcon fontSize="small" />
           Filters

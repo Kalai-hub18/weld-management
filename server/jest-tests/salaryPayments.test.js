@@ -108,6 +108,73 @@ describe('Salary advance/partial pay APIs', () => {
     expect(payRes.body.data.worker.advanceBalance).toBe(0)
   })
 
+  test('preview and pay full salary with daily payments list', async () => {
+    const token = await registerAndLoginAdmin()
+
+    const worker = await User.create({
+      username: 'worker5',
+      password: 'password123',
+      name: 'Worker Five',
+      email: 'w5@example.com',
+      role: 'Worker',
+      status: 'active',
+      salaryMonthly: 30000,
+      salaryDaily: 1000,
+      advanceBalance: 5000,
+    })
+
+    const previewRes = await request(app)
+      .post('/api/salary/preview')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        workerId: worker._id.toString(),
+        type: 'full',
+        dailyPayments: [
+          { date: '2025-12-05', amount: 500 },
+          { date: '2025-12-06', amount: 500 }
+        ]
+      })
+
+    expect(previewRes.status).toBe(200)
+    expect(previewRes.body.success).toBe(true)
+    // Gross 30000 - Advance 5000 - DailyPayments 1000 = 24000
+    expect(previewRes.body.data.calculation.amountGross).toBe(30000)
+    expect(previewRes.body.data.calculation.advanceDeducted).toBe(5000)
+    expect(previewRes.body.data.calculation.netAmount).toBe(24000)
+
+    const payRes = await request(app)
+      .post('/api/salary/pay')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        workerId: worker._id.toString(),
+        type: 'full',
+        dailyPayments: [
+          { date: '2025-12-05', amount: 500 },
+          { date: '2025-12-06', amount: 500 }
+        ],
+        note: 'Dec salary with daily payments'
+      })
+
+    expect(payRes.status).toBe(201)
+    expect(payRes.body.success).toBe(true)
+    expect(payRes.body.data.payment.netAmount).toBe(24000)
+    // Advance before full payment includes the just-added daily payments (5000 + 1000)
+    expect(payRes.body.data.payment.advanceBalanceBefore).toBe(6000)
+    expect(payRes.body.data.payment.advanceBalanceAfter).toBe(0)
+
+    // Verify daily payments were created
+    const dailyPayments = await request(app)
+      .get(`/api/salary/history/${worker._id.toString()}?limit=10`)
+      .set('Authorization', `Bearer ${token}`)
+
+    // Should have 3 payments: 1 Full, 2 Daily
+    expect(dailyPayments.body.data).toHaveLength(3)
+    const dailies = dailyPayments.body.data.filter(p => p.type === 'daily')
+    expect(dailies).toHaveLength(2)
+    expect(dailies[0].amountGross).toBe(500)
+    expect(dailies[1].amountGross).toBe(500)
+  })
+
   test('advance payment increases advanceBalance', async () => {
     const token = await registerAndLoginAdmin()
 

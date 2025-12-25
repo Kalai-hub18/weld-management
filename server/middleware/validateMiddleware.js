@@ -533,9 +533,13 @@ export const schemas = {
   salaryPreview: z.object({
     body: z.object({
       workerId: objectId,
-      type: z.enum(['full', 'partial', 'advance', 'adhoc']),
+      type: z.enum(['full', 'partial', 'advance', 'adhoc', 'daily']),
       daysPaid: z.coerce.number().int().min(1).max(31).optional(),
       amount: z.coerce.number().positive().optional(),
+      dailyPayments: z.array(z.object({
+        date: z.string(),
+        amount: z.coerce.number().positive()
+      })).optional(),
       payDate: z.string().optional(),
       note: z.string().optional(),
     }).refine((data) => {
@@ -548,9 +552,13 @@ export const schemas = {
   salaryPay: z.object({
     body: z.object({
       workerId: objectId,
-      type: z.enum(['full', 'partial', 'advance', 'adhoc']),
+      type: z.enum(['full', 'partial', 'advance', 'adhoc', 'daily']),
       daysPaid: z.coerce.number().int().min(1).max(31).optional(),
       amount: z.coerce.number().positive().optional(),
+      dailyPayments: z.array(z.object({
+        date: z.string(),
+        amount: z.coerce.number().positive()
+      })).optional(),
       payDate: z.string().optional(),
       note: z.string().optional(),
     }).refine((data) => {

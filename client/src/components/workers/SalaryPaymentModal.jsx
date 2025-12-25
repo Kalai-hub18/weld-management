@@ -12,6 +12,9 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Divider from '@mui/material/Divider'
 import Alert from '@mui/material/Alert'
+import IconButton from '@mui/material/IconButton'
+import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 import salaryService from '../../services/salaryService'
 
@@ -30,6 +33,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
 
   const [daysPaid, setDaysPaid] = useState(1)
   const [amount, setAmount] = useState('')
+  const [dailyPayments, setDailyPayments] = useState([])
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0])
   const [note, setNote] = useState('')
 
@@ -43,6 +47,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
     setActiveTab(0)
     setDaysPaid(1)
     setAmount('')
+    setDailyPayments([])
     setPayDate(new Date().toISOString().split('T')[0])
     setNote('')
     setPreview(null)
@@ -66,6 +71,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
         type,
         ...(type === 'partial' ? { daysPaid: Number(daysPaid) } : {}),
         ...(type === 'advance' || type === 'adhoc' ? { amount: Number(amount) } : {}),
+        ...(type === 'full' ? { dailyPayments } : {}),
         payDate,
         note,
       }
@@ -89,6 +95,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
         type,
         ...(type === 'partial' ? { daysPaid: Number(daysPaid) } : {}),
         ...(type === 'advance' || type === 'adhoc' ? { amount: Number(amount) } : {}),
+        ...(type === 'full' ? { dailyPayments } : {}),
         payDate,
         note,
       }
@@ -141,6 +148,70 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
             fullWidth
             inputProps={{ min: 0, step: '0.01' }}
           />
+        )}
+
+        {type === 'full' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-neutral-600">Daily Payments</div>
+              <button
+                className="text-primary text-sm flex items-center gap-1 hover:underline"
+                onClick={() => setDailyPayments([...dailyPayments, { date: payDate, amount: '' }])}
+              >
+                <AddIcon fontSize="small" /> Add Payment
+              </button>
+            </div>
+
+            {dailyPayments.length === 0 && (
+              <div className="text-sm text-neutral-400 italic bg-neutral-50 p-2 rounded text-center">
+                No daily payments added
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {dailyPayments.map((dp, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <TextField
+                    type="date"
+                    size="small"
+                    value={dp.date}
+                    onChange={(e) => {
+                      const newPayments = dailyPayments.map((p, i) =>
+                        i === idx ? { ...p, date: e.target.value } : p
+                      )
+                      setDailyPayments(newPayments)
+                    }}
+                    InputLabelProps={{ shrink: true }}
+                    className="flex-1"
+                  />
+                  <TextField
+                    placeholder="Amount"
+                    type="number"
+                    size="small"
+                    value={dp.amount}
+                    onChange={(e) => {
+                      const newPayments = dailyPayments.map((p, i) =>
+                        i === idx ? { ...p, amount: e.target.value } : p
+                      )
+                      setDailyPayments(newPayments)
+                    }}
+                    className="flex-1"
+                    inputProps={{ min: 0 }}
+                  />
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      const newPayments = dailyPayments.filter((_, i) => i !== idx)
+                      setDailyPayments(newPayments)
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <TextField
