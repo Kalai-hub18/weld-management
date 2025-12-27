@@ -28,9 +28,6 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
     description: '',
     type: '',
     date: defaultDate || new Date().toISOString().split('T')[0],
-    // Default to an 8-hour slot to match worker daily capacity (workingHoursPerDay default = 8).
-    startTime: '08:00',
-    endTime: '16:00',
     projectId: '',
     workerIds: [],
     priority: 'medium',
@@ -100,7 +97,8 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
       if (!date) return
       setEligibleLoading(true)
       try {
-        const res = await taskService.getEligibleWorkers(date, formData.startTime, formData.endTime)
+        // Don't pass startTime/endTime to show all eligible workers including half-day
+        const res = await taskService.getEligibleWorkers(date)
         setEligibleWorkers(res.data || [])
         setEligibleMessage(res.message || '')
       } catch (e) {
@@ -112,7 +110,7 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
     }
     fetchEligible()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, formData.date, formData.startTime, formData.endTime])
+  }, [open, formData.date])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -149,28 +147,10 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
     if (!formData.date) newErrors.date = 'Date is required'
     if (!formData.projectId) newErrors.projectId = 'Project is required'
     if (!formData.workerIds || formData.workerIds.length === 0) newErrors.workerIds = 'At least one worker is required'
-    if (!formData.startTime) newErrors.startTime = 'Start time is required'
-    if (!formData.endTime) newErrors.endTime = 'End time is required'
-    if (formData.startTime && formData.endTime && formData.endTime <= formData.startTime) {
-      newErrors.endTime = 'End time must be after start time'
-    }
     if (projectEndDateStr && formData.date && formData.date > projectEndDateStr) {
       newErrors.date = 'This task date exceeds the project end date. Please extend the project to continue.'
     }
 
-    // Availability validation (frontend safety): block selecting workers who can't be assigned for this slot.
-    if (Array.isArray(formData.workerIds) && formData.workerIds.length > 0) {
-      const blocked = formData.workerIds
-        .map((id) => eligibleWorkers.find(w => getId(w) === id))
-        .filter(Boolean)
-        .filter((w) => w.canAssign === false)
-
-      if (blocked.length > 0) {
-        // Prefer explicit half-day message if present
-        const halfDayDone = blocked.find(w => (w.blockedReason || '').includes('half-day work'))
-        newErrors.workerIds = halfDayDone?.blockedReason || blocked[0]?.blockedReason || 'Selected worker is not available for this time slot'
-      }
-    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -197,8 +177,6 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
       description: '',
       type: '',
       date: defaultDate || new Date().toISOString().split('T')[0],
-      startTime: '08:00',
-      endTime: '16:00',
       projectId: '',
       workerIds: [],
       priority: 'medium',
@@ -309,7 +287,7 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
             <h3 className="text-sm font-semibold text-neutral-500 uppercase mb-4">
               Schedule
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <TextField
                 fullWidth
                 label="Date"
@@ -328,24 +306,6 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
                 inputProps={{
                   max: projectEndDateStr || undefined,
                 }}
-              />
-              <TextField
-                fullWidth
-                label="Start Time"
-                name="startTime"
-                type="time"
-                value={formData.startTime}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-              />
-              <TextField
-                fullWidth
-                label="End Time"
-                name="endTime"
-                type="time"
-                value={formData.endTime}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
               />
             </div>
           </div>
@@ -396,11 +356,10 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
                   {filteredWorkers.map(worker => {
                     const wid = getId(worker)
                     return (
-                      <MenuItem key={wid} value={wid} disabled={worker.canAssign === false}>
+                      <MenuItem key={wid} value={wid}>
                         {worker.name} - {worker.position}
                         {worker.attendanceStatus === 'half-day' ? ' — Half Day – Limited availability' : ''}
                         {typeof worker.remainingHours === 'number' ? ` (Remaining: ${worker.remainingHours}h)` : ''}
-                        {worker.canAssign === false && worker.blockedReason ? ` — ${worker.blockedReason}` : ''}
                       </MenuItem>
                     )
                   })}
@@ -411,8 +370,8 @@ const AddTaskModal = ({ open, onClose, defaultDate, onAdd, workers = [], project
                     : eligibleLoading
                       ? 'Loading eligible workers...'
                       : filteredWorkers.length === 0
-                        ? (eligibleMessage || 'No eligible workers for this date/time.')
-                        : 'Workers shown are Active and either Present (full day) or Half Day (limited availability). Overlaps and over-assignment are blocked.'}
+                        ? (eligibleMessage || 'No eligible workers for this date.')
+                        : 'Workers shown are Active and either Present (full day) or Half Day (limited availability).'}
                 </FormHelperText>
               </FormControl>
               <TextField

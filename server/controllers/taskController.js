@@ -498,7 +498,8 @@ export const createTask = asyncHandler(async (req, res) => {
   }
   await assertWorkersEligibleForTask({ workerIds: normalizedWorkers, taskDate })
   // Availability-based assignment (attendance + remaining hours + no overlaps)
-  if (normalizedWorkers.length > 0) {
+  // Only validate time-based availability if startTime and endTime are provided
+  if (normalizedWorkers.length > 0 && startTime && endTime) {
     await assertWorkersAvailableForTask({
       workerIds: normalizedWorkers,
       taskDateStr: dueDate,
@@ -510,7 +511,7 @@ export const createTask = asyncHandler(async (req, res) => {
   // ✅ NEW LOGIC: Auto-add workers to project team if not already present
   let projectUpdated = false
   const workersToAdd = []
-  
+
   if (normalizedWorkers.length > 0) {
     for (const wid of normalizedWorkers) {
       if (!teamIds.includes(wid.toString())) {
@@ -562,7 +563,7 @@ export const createTask = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     data: populatedTask,
-    message: projectUpdated 
+    message: projectUpdated
       ? 'Task created and workers added to project team'
       : 'Task created successfully',
     meta: {
@@ -663,16 +664,20 @@ export const updateTask = asyncHandler(async (req, res) => {
       await assertWorkersEligibleForTask({ workerIds: normalizedWorkers, taskDate: effectiveDate })
 
       // Availability-based assignment: enforce overlap + capacity for the effective date/time.
+      // Only validate if both startTime and endTime are provided
       const effectiveDateStr = effectiveDate.toISOString().split('T')[0]
       const effectiveStartTime = body.startTime !== undefined ? body.startTime : task.startTime
       const effectiveEndTime = body.endTime !== undefined ? body.endTime : task.endTime
-      await assertWorkersAvailableForTask({
-        workerIds: normalizedWorkers,
-        taskDateStr: effectiveDateStr,
-        startTime: effectiveStartTime,
-        endTime: effectiveEndTime,
-        excludeTaskId: task._id,
-      })
+
+      if (effectiveStartTime && effectiveEndTime) {
+        await assertWorkersAvailableForTask({
+          workerIds: normalizedWorkers,
+          taskDateStr: effectiveDateStr,
+          startTime: effectiveStartTime,
+          endTime: effectiveEndTime,
+          excludeTaskId: task._id,
+        })
+      }
 
       // Auto-add workers to project team if not already present
       for (const wid of normalizedWorkers) {
@@ -707,7 +712,7 @@ export const updateTask = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: updatedTask,
-    message: projectUpdated 
+    message: projectUpdated
       ? 'Task updated and workers added to project team'
       : 'Task updated successfully',
     meta: projectUpdated ? {
@@ -811,8 +816,8 @@ export const addComment = asyncHandler(async (req, res) => {
 // @route   GET /api/tasks/stats
 // @access  Private
 export const getTaskStats = asyncHandler(async (req, res) => {
-  const matchQuery = req.user.role === 'Worker' 
-    ? { assignedTo: req.user._id } 
+  const matchQuery = req.user.role === 'Worker'
+    ? { assignedTo: req.user._id }
     : {}
 
   const stats = await Task.aggregate([
