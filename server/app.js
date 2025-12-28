@@ -16,6 +16,7 @@ import invoiceRoutes from './routes/invoiceRoutes.js'
 import projectInvoiceRoutes from './routes/projectInvoiceRoutes.js'
 import salaryInvoiceRoutes from './routes/salaryInvoiceRoutes.js'
 import invoiceCommunicationRoutes from './routes/invoiceCommunicationRoutes.js'
+import dashboardRoutes from './routes/dashboardRoutes.js'
 
 // Import Middleware
 import { errorHandler, notFound } from './middleware/errorMiddleware.js'
@@ -51,6 +52,7 @@ app.use('/api/invoices/salary', salaryInvoiceRoutes)
 app.use('/api/invoices', invoiceCommunicationRoutes)
 app.use('/api/invoices', invoiceRoutes)
 app.use('/api', costRoutes)
+app.use('/api/dashboard', dashboardRoutes)
 
 // Health check route
 app.get('/api/health', (req, res) => {
