@@ -44,6 +44,16 @@ const salaryPaymentSchema = new mongoose.Schema(
       date: Date,
       amount: Number,
     }],
+    overtimeDeduction: {
+      type: Number,
+      default: 0,
+      min: [0, 'Overtime deduction cannot be negative'],
+    },
+    overtimePaymentDetails: [{
+      date: Date,
+      amount: Number,
+      hours: Number,
+    }],
     netAmount: {
       type: Number,
       required: true,

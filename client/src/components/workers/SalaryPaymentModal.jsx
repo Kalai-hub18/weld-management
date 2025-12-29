@@ -34,6 +34,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
   const [daysPaid, setDaysPaid] = useState(1)
   const [amount, setAmount] = useState('')
   const [dailyPayments, setDailyPayments] = useState([])
+  const [overtimePayments, setOvertimePayments] = useState([])
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0])
   const [note, setNote] = useState('')
 
@@ -48,6 +49,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
     setDaysPaid(1)
     setAmount('')
     setDailyPayments([])
+    setOvertimePayments([])
     setPayDate(new Date().toISOString().split('T')[0])
     setNote('')
     setPreview(null)
@@ -72,6 +74,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
         ...(type === 'partial' ? { daysPaid: Number(daysPaid) } : {}),
         ...(type === 'advance' || type === 'adhoc' ? { amount: Number(amount) } : {}),
         ...(type === 'full' ? { dailyPayments } : {}),
+        ...(overtimePayments.length > 0 ? { overtimePayments: overtimePayments.filter(ot => ot.amount && Number(ot.amount) > 0) } : {}),
         payDate,
         note,
       }
@@ -96,6 +99,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
         ...(type === 'partial' ? { daysPaid: Number(daysPaid) } : {}),
         ...(type === 'advance' || type === 'adhoc' ? { amount: Number(amount) } : {}),
         ...(type === 'full' ? { dailyPayments } : {}),
+        ...(overtimePayments.length > 0 ? { overtimePayments: overtimePayments.filter(ot => ot.amount && Number(ot.amount) > 0) } : {}),
         payDate,
         note,
       }
@@ -214,6 +218,83 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
           </div>
         )}
 
+        {/* Overtime Payments Section */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium text-neutral-600">Overtime Payments</div>
+            <button
+              className="text-primary text-sm flex items-center gap-1 hover:underline"
+              onClick={() => setOvertimePayments([...overtimePayments, { date: payDate, amount: '', hours: '' }])}
+            >
+              <AddIcon fontSize="small" /> Add Overtime
+            </button>
+          </div>
+
+          {overtimePayments.length === 0 && (
+            <div className="text-sm text-neutral-400 italic bg-neutral-50 p-2 rounded text-center">
+              No overtime payments added
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {overtimePayments.map((ot, idx) => (
+              <div key={idx} className="flex gap-2">
+                <TextField
+                  type="date"
+                  size="small"
+                  value={ot.date}
+                  onChange={(e) => {
+                    const newPayments = overtimePayments.map((p, i) =>
+                      i === idx ? { ...p, date: e.target.value } : p
+                    )
+                    setOvertimePayments(newPayments)
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  className="flex-1"
+                />
+                <TextField
+                  placeholder="Amount"
+                  type="number"
+                  size="small"
+                  value={ot.amount}
+                  onChange={(e) => {
+                    const newPayments = overtimePayments.map((p, i) =>
+                      i === idx ? { ...p, amount: e.target.value } : p
+                    )
+                    setOvertimePayments(newPayments)
+                  }}
+                  className="flex-1"
+                  inputProps={{ min: 0, step: '0.01' }}
+                />
+                <TextField
+                  placeholder="Hours"
+                  type="number"
+                  size="small"
+                  value={ot.hours}
+                  onChange={(e) => {
+                    const newPayments = overtimePayments.map((p, i) =>
+                      i === idx ? { ...p, hours: e.target.value } : p
+                    )
+                    setOvertimePayments(newPayments)
+                  }}
+                  className="flex-1"
+                  inputProps={{ min: 0, step: '0.5' }}
+                />
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => {
+                    const newPayments = overtimePayments.filter((_, i) => i !== idx)
+                    setOvertimePayments(newPayments)
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <TextField
           label="Pay Date"
           type="date"
@@ -234,7 +315,7 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
 
         <Divider />
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
             <div className="text-xs text-neutral-500">Gross</div>
             <div className="text-lg font-bold">
@@ -245,6 +326,12 @@ export default function SalaryPaymentModal({ open, onClose, worker, onPaid }) {
             <div className="text-xs text-neutral-500">Advance Deducted</div>
             <div className="text-lg font-bold">
               {preview?.calculation ? `₹${preview.calculation.advanceDeducted}` : '—'}
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+            <div className="text-xs text-neutral-500">Overtime Deducted</div>
+            <div className="text-lg font-bold text-warning">
+              {preview?.calculation ? `₹${preview.calculation.overtimePaymentsTotal || 0}` : '—'}
             </div>
           </div>
           <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">

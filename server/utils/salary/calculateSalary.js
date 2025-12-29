@@ -16,6 +16,11 @@ export function calculateSalary(worker, opts) {
   const requestedAmount = coerceNumber(opts?.amount)
   const dailyPayments = Array.isArray(opts?.dailyPayments) ? opts.dailyPayments : []
   const dailyPaymentsTotal = dailyPayments.reduce((acc, curr) => acc + coerceNumber(curr.amount), 0)
+  const overtimePayments = Array.isArray(opts?.overtimePayments) ? opts.overtimePayments : []
+  const overtimePaymentsTotal = overtimePayments.reduce((acc, curr) => {
+    const amount = coerceNumber(curr.amount)
+    return acc + amount
+  }, 0)
 
   let amountGross = 0
   let advanceDeducted = 0
@@ -35,24 +40,24 @@ export function calculateSalary(worker, opts) {
 
     // We don't change advanceDeducted (that tracks historical advance), 
     // but the dailyPayments will be recorded as separate 'daily' (advance) payments.
-    // The net pay is what remains.
-    netAmount = Math.max(0, remainingAfterAdvance - dailyPaymentsTotal)
+    // The net pay is what remains after daily payments and overtime deductions.
+    netAmount = Math.max(0, remainingAfterAdvance - dailyPaymentsTotal - overtimePaymentsTotal)
   } else if (type === 'partial') {
     if (!requestedDays || requestedDays <= 0) throw new Error('daysPaid must be > 0 for partial')
     const daily = salaryDaily > 0 ? salaryDaily : (salaryMonthly > 0 ? salaryMonthly / daysInMonth : 0)
     amountGross = daily * requestedDays
     advanceDeducted = Math.min(advanceBalance, amountGross)
-    netAmount = amountGross - advanceDeducted
+    netAmount = Math.max(0, amountGross - advanceDeducted - overtimePaymentsTotal)
   } else if (type === 'advance' || type === 'daily') {
     if (!requestedAmount || requestedAmount <= 0) throw new Error('amount must be > 0 for advance/daily')
     amountGross = requestedAmount
     advanceDeducted = 0
-    netAmount = amountGross
+    netAmount = Math.max(0, amountGross - overtimePaymentsTotal)
   } else if (type === 'adhoc') {
     if (!requestedAmount || requestedAmount <= 0) throw new Error('amount must be > 0 for adhoc')
     amountGross = requestedAmount
     advanceDeducted = Math.min(advanceBalance, amountGross)
-    netAmount = amountGross - advanceDeducted
+    netAmount = Math.max(0, amountGross - advanceDeducted - overtimePaymentsTotal)
   } else {
     throw new Error(`Unsupported type: ${type}`)
   }
@@ -64,6 +69,7 @@ export function calculateSalary(worker, opts) {
     advanceDeducted: round2(advanceDeducted),
     netAmount: round2(netAmount),
     dailyPaymentsTotal: round2(dailyPaymentsTotal),
+    overtimePaymentsTotal: round2(overtimePaymentsTotal),
   }
 }
 

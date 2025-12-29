@@ -28,6 +28,7 @@ import WorkIcon from '@mui/icons-material/Work'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import ArchiveIcon from '@mui/icons-material/Archive'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -806,7 +807,7 @@ const WorkerProfilePage = () => {
                 <div className="p-4 rounded-xl bg-gradient-to-br from-success/10 to-success/5 border border-success/20">
                   <p className="text-sm text-neutral-500 mb-1">Last Payment</p>
                   <p className="text-xl font-bold text-success">
-                    {paymentHistory?.[0]?.netAmount ? formatCurrency(Number(paymentHistory[0].netAmount), settings) : '—'}
+                    {paymentHistory?.[0] ? formatCurrency((Number(paymentHistory[0].advanceDeducted || 0) + Number(paymentHistory[0].dailyDeduction || 0) + Number(paymentHistory[0].overtimeDeduction || 0)), settings) : '—'}
                   </p>
                   <p className="text-xs text-neutral-400">
                     {paymentHistory?.[0]?.payDate ? formatDate(paymentHistory[0].payDate, settings) : '--'}
@@ -857,40 +858,49 @@ const WorkerProfilePage = () => {
                             <td className="p-3">{p.payDate ? formatDate(p.payDate, settings) : '--'}</td>
                             <td className="p-3 capitalize">{p.type}</td>
                             <td className="p-3 text-right">{formatCurrency(Number(p.amountGross || 0), settings)}</td>
-                            <td className="p-3 text-right">{formatCurrency((Number(p.advanceDeducted || 0) + Number(p.dailyDeduction || 0)), settings)}</td>
+                            <td className="p-3 text-right">{formatCurrency((Number(p.advanceDeducted || 0) + Number(p.dailyDeduction || 0) + Number(p.overtimeDeduction || 0)), settings)}</td>
                             <td className="p-3 text-right">{formatCurrency(Number(p.netAmount || 0), settings)}</td>
                             <td className="p-3 text-right">{formatCurrency(Number(p.advanceBalanceAfter ?? 0), settings)}</td>
                             <td className="p-3 text-right">
                               <div className="flex justify-end gap-2">
-                                {p.dailyPaymentDetails?.length > 0 && (
-                                  <button
-                                    className="px-3 py-1 rounded-lg bg-info/10 text-info text-sm"
-                                    onClick={() => setLedgerSelected(p)}
-                                  >
-                                    View
-                                  </button>
+                                {((p.dailyPaymentDetails?.length > 0) || (p.overtimePaymentDetails?.length > 0) || (Number(p.overtimeDeduction || 0) > 0)) && (
+                                  <Tooltip title="View">
+                                    <IconButton
+                                      size="small"
+                                      className="bg-info/10 text-info hover:bg-info/20"
+                                      onClick={() => setLedgerSelected(p)}
+                                    >
+                                      <VisibilityIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
                                 )}
-                                <button
-                                  className="px-3 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-sm"
-                                  onClick={() => {
-                                    setLedgerSelected(p)
-                                    setLedgerNote(p.note || '')
-                                    setLedgerPayDate(p.payDate ? new Date(p.payDate).toISOString().split('T')[0] : '')
-                                    setLedgerEditOpen(true)
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  className="px-3 py-1 rounded-lg bg-danger/10 text-danger text-sm"
-                                  onClick={() => {
-                                    setLedgerSelected(p)
-                                    setLedgerVoidReason('')
-                                    setLedgerVoidOpen(true)
-                                  }}
-                                >
-                                  Delete
-                                </button>
+                                <Tooltip title="Edit">
+                                  <IconButton
+                                    size="small"
+                                    className="bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                                    onClick={() => {
+                                      setLedgerSelected(p)
+                                      setLedgerNote(p.note || '')
+                                      setLedgerPayDate(p.payDate ? new Date(p.payDate).toISOString().split('T')[0] : '')
+                                      setLedgerEditOpen(true)
+                                    }}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete">
+                                  <IconButton
+                                    size="small"
+                                    className="bg-danger/10 text-danger hover:bg-danger/20"
+                                    onClick={() => {
+                                      setLedgerSelected(p)
+                                      setLedgerVoidReason('')
+                                      setLedgerVoidOpen(true)
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
                               </div>
                             </td>
                           </tr>
@@ -1219,6 +1229,32 @@ const WorkerProfilePage = () => {
                   <div className="flex justify-between p-2 text-sm font-bold bg-neutral-100 dark:bg-neutral-800">
                     <span>Total Daily Deducted</span>
                     <span>{formatCurrency(ledgerSelected.dailyPaymentDetails.reduce((sum, d) => sum + Number(d.amount), 0), settings)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Overtime Payments List */}
+            {ledgerSelected?.overtimePaymentDetails?.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-dashed border-neutral-200 dark:border-neutral-700">
+                <p className="text-sm font-semibold mb-2">Overtime Payments Included</p>
+                <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg overflow-hidden">
+                  {ledgerSelected.overtimePaymentDetails.map((ot, i) => (
+                    <div key={i} className="p-2 text-sm border-b border-light-border dark:border-dark-border last:border-0">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-neutral-600 dark:text-neutral-300">{formatDate(ot.date, settings)}</span>
+                        <span className="font-medium">{formatCurrency(Number(ot.amount || 0), settings)}</span>
+                      </div>
+                      {ot.hours > 0 && (
+                        <div className="text-xs text-neutral-500">
+                          Hours: {Number(ot.hours)}h
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="flex justify-between p-2 text-sm font-bold bg-neutral-100 dark:bg-neutral-800">
+                    <span>Total Overtime Deducted</span>
+                    <span>{formatCurrency(ledgerSelected.overtimePaymentDetails.reduce((sum, ot) => sum + Number(ot.amount || 0), 0), settings)}</span>
                   </div>
                 </div>
               </div>

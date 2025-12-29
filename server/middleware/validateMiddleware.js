@@ -540,6 +540,11 @@ export const schemas = {
         date: z.string(),
         amount: z.coerce.number().positive()
       })).optional(),
+      overtimePayments: z.array(z.object({
+        date: z.string(),
+        amount: z.coerce.number().nonnegative(),
+        hours: z.coerce.number().nonnegative()
+      })).optional(),
       payDate: z.string().optional(),
       note: z.string().optional(),
     }).refine((data) => {
@@ -558,6 +563,11 @@ export const schemas = {
       dailyPayments: z.array(z.object({
         date: z.string(),
         amount: z.coerce.number().positive()
+      })).optional(),
+      overtimePayments: z.array(z.object({
+        date: z.string(),
+        amount: z.coerce.number().nonnegative(),
+        hours: z.coerce.number().nonnegative()
       })).optional(),
       payDate: z.string().optional(),
       note: z.string().optional(),

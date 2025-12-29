@@ -7,7 +7,7 @@ import { recomputeAdvanceLedger } from '../utils/salary/recomputeAdvanceLedger.j
 
 // POST /api/salary/preview
 export const previewSalaryPayment = asyncHandler(async (req, res) => {
-  const { workerId, type, daysPaid, amount, dailyPayments, payDate, note } = req.body
+  const { workerId, type, daysPaid, amount, dailyPayments, overtimePayments, payDate, note } = req.body
 
   const worker = await User.findOne({ _id: workerId, role: 'Worker' })
   if (!worker) {
@@ -56,6 +56,7 @@ export const previewSalaryPayment = asyncHandler(async (req, res) => {
       daysPaid: daysPaid ?? null,
       amount: amount ?? null,
       dailyPayments: dailyPayments ?? [],
+      overtimePayments: overtimePayments ?? [],
       payDate: payDate || new Date().toISOString(),
       note: note || '',
       worker: {
@@ -80,7 +81,7 @@ export const previewSalaryPayment = asyncHandler(async (req, res) => {
 
 // POST /api/salary/pay
 export const paySalary = asyncHandler(async (req, res) => {
-  const { workerId, type, daysPaid, amount, dailyPayments, payDate, note } = req.body
+  const { workerId, type, daysPaid, amount, dailyPayments, overtimePayments, payDate, note } = req.body
 
   const worker = await User.findOne({ _id: workerId, role: 'Worker' })
   if (!worker) {
@@ -123,7 +124,7 @@ export const paySalary = asyncHandler(async (req, res) => {
   //    Deduct Daily Payments (early salary) as 'dailyDeduction'.
   //    Remaining is 'netAmount' (cash now).
 
-  const calc = calculateSalary(worker, { type, daysPaid, amount, dailyPayments })
+  const calc = calculateSalary(worker, { type, daysPaid, amount, dailyPayments, overtimePayments })
   const currentAdvanceBalance = Number(worker.advanceBalance || 0)
 
   // Update advance balance based on the main payment (deducting advance)
@@ -166,6 +167,13 @@ export const paySalary = asyncHandler(async (req, res) => {
     amount: Number(d.amount)
   })).filter(d => d.amount > 0) : []
 
+  // Prepare Overtime Payment Details
+  const overtimeDetails = Array.isArray(overtimePayments) ? overtimePayments.map(ot => ({
+    date: ot.date,
+    amount: Number(ot.amount || 0),
+    hours: Number(ot.hours || 0)
+  })).filter(ot => Number(ot.amount || 0) > 0 || Number(ot.hours || 0) > 0) : []
+
   // Create SalaryPayment Record
   const payment = await SalaryPayment.create({
     workerId,
@@ -176,6 +184,8 @@ export const paySalary = asyncHandler(async (req, res) => {
     advanceDeducted: calc.advanceDeducted, // Loan deduction
     dailyDeduction: calc.dailyPaymentsTotal, // Early payments
     dailyPaymentDetails: dailyDetails, // Store details
+    overtimeDeduction: calc.overtimePaymentsTotal, // Overtime deductions
+    overtimePaymentDetails: overtimeDetails, // Store overtime details
     netAmount: calc.netAmount, // Cash paid now
     advanceBalanceBefore: currentAdvanceBalance,
     advanceBalanceAfter: newAdvanceBalance,
