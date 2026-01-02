@@ -79,7 +79,15 @@ const TasksPage = () => {
       : (t.assignedTo ? [{ id: normalizeId(t.assignedTo), name: t.assignedTo.name, email: t.assignedTo.email }] : [])
 
     const worker = workers[0] || null
-    const date = t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : ''
+    // Extract date string from UTC date to avoid timezone shifts
+    const date = t.dueDate ? (() => {
+      const d = new Date(t.dueDate)
+      // Use UTC methods to extract date parts to avoid timezone conversion
+      const year = d.getUTCFullYear()
+      const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+      const day = String(d.getUTCDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    })() : ''
 
     return {
       id: normalizeId(t),

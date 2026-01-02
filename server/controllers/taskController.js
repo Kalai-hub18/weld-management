@@ -25,17 +25,17 @@ function computeInterval({ startTime, endTime }) {
 }
 
 function parseDateOnlyLocal(dateStr) {
-  // Parse YYYY-MM-DD as a LOCAL calendar date (avoids JS Date UTC parsing pitfalls)
+  // Parse YYYY-MM-DD as a UTC calendar date to avoid timezone shifts
+  // This ensures the date stored in MongoDB matches the date string provided
   const [y, m, d] = String(dateStr || '').split('-').map(Number)
-  const dt = new Date(y, (m || 1) - 1, d || 1)
-  dt.setHours(0, 0, 0, 0)
+  const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0, 0))
   return dt
 }
 
 function localDayRange(dateStr) {
   const start = parseDateOnlyLocal(dateStr)
-  const end = new Date(start)
-  end.setDate(end.getDate() + 1)
+  // Add one day in UTC to avoid timezone issues
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
   return { start, end }
 }
 
